@@ -14,34 +14,46 @@ import sys
 # The function accepts INTEGER_ARRAY arr as parameter.
 #
 
-def end_of_block(arr, x, i):
-    # given arr and x is a value in arr st. arr_i=x, find longest subarr x,...,x starting from i
-    # ie end of the subarr
+def find_end_of_block(i, arr):
+    # given index i, find longest subarray starting from i and having form a_i,...,a_i
+    # ie return end of the subarr a_i,...,a_i
     for j in range(i, len(arr)):
-        if arr[j] == x:
+        if arr[j] == arr[i] :
             pass
         else:
-            return j-1
+            end_of_block = j - 1
+            # print('starting from ', i, '-index, sub-array with all values equal ', arr[i], ' extend to ', end_of_block)
+            # print('the sub-array', arr[i:j])
+            return end_of_block
+
+    # print('starting from ', i, '-index, sub-array with all values equal ', arr[i], ' extend to end of array')
     return len(arr)-1
 
 
 def find_sub_arr(arr, i):
     # given index i in arr,
-    # find the contiguous block which start from i and have form eihter [a_i, ..., a_i, a_i + 1,..., a_i + 1],
+    # find the contiguous block which start from i and have form either [a_i, ..., a_i, a_i + 1,..., a_i + 1],
     # or a_i, ..., a_i, a_i - 1,..., a_i - 1
     # Return len of that block
 
-    # find end of sub_arr of form a_i, .., a_i
-    j = end_of_block(arr, arr[i], i)
+    # basically, such a block is made from 2 blocks [a_i,..., a_i] and [a_i +/- 1, ..., a_i +/- 1]
+    # which are next to each ohter
+
+    # find end of sub_arr starting from i and of form a_i, .., a_i
+    j = find_end_of_block(i, arr)
 
     if j+1 < len(arr):
-        if abs(arr[j + 1] - arr[i]) == 1:
-            k = end_of_block(arr, arr[j + 1], j + 1)
+        # find block [a_i +/- 1, ..., a_i +/- 1]
+        if abs(arr[j + 1] - arr[j]) == 1:
+            k = find_end_of_block(j + 1, arr)
+            print(arr[i:k+1])
             return k - i + 1
         else:
+            print(arr[i:j+1])
             return j - i + 1
     else:
-        return j-i+1
+        print(arr[i:j + 1])
+        return j - i + 1
 
 
 def longestSubarray(arr):
