@@ -10,7 +10,7 @@ def find_start_non_plus(s):
             return i
     return None
 
-# todo: use re.findall() for this method
+# todo: use re.finditer() for this method
 def find_non_plus_ranges(s):
     # return start and stop of the block of non-plus chars (i.e !='+')
     # find index of the first non-plus letter
@@ -89,8 +89,9 @@ def try_filling(wrd, pos, grid, axis=0):  # axis 0 means row, 1 means col
     # i) len match: its length matches the no. of usable cells in pos
     # ii) letter match: its letters match with fixed letters in the row/column
 
-    usable_cells, positions_of_cells = find_usable_cells(pos, grid, axis)
+    usable_cells, positions_of_cells = find_usable_cells(pos, grid, axis)   # todo: change to find_usable_ranges
     if usable_cells:
+        # todo: check filling for each usable range
         if is_match(wrd, usable_cells):  # word and the usable cells match, so can fit
             filled_grid = fill_word_into_position(wrd, pos, grid, axis)
             print(filled_grid)
