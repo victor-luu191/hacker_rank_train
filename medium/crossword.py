@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os
-
+import re
 
 
 def find_start_non_plus(s):
@@ -10,7 +10,7 @@ def find_start_non_plus(s):
             return i
     return None
 
-# todo: use re.finditer() for this method
+
 def find_non_plus_ranges(s):
     # return start and stop of the block of non-plus chars (i.e !='+')
     # find index of the first non-plus letter
@@ -22,48 +22,40 @@ def find_non_plus_ranges(s):
         return None, None
 
 
-def find_usable_cells(index, grid, axis=0):
+# todo: use re.finditer() for this method
+def find_fillable_ranges(index, grid, axis=0):
     # given position in a grid and a direction (axis),
-    # return content and positions of usable cells.
+    # return content and positions of fillable range
 
-    # usable cells are not + (either marked with - or some alphabet)
+    # a range is a string with chars in [-, a-z], pattern "-* | [a-z]*"
     # positions must contain index of row/column and start/stop of usable cells
     if axis == 0:
-        print('\t finding usable cells in row', index)
-        row = grid[index]
-        start, stop = find_non_plus_ranges(row)
-        if start and stop:
-            content = row[start:stop]
-        else:
-            content = None
+        print('\t finding fillable ranges in row', index)
+        cells = grid[index]
     else:
-        print('\t finding usable cells in column', index)
-        col = ''.join([grid[rr][index] for rr in range(len(grid))])
-        start, stop = find_non_plus_ranges(col)
-        if start and stop:
-            content = col[start: stop]
-        else:
-            content = None
+        print('\t finding fillable ranges in column', index)
+        cells = ''.join([grid[rr][index] for rr in range(len(grid))])
 
-    positions = {'index': index, 'start': start, 'stop': stop}
-    if content:
-        print('letters in usable cells: ', content)
-        print('position of usable cells: ', positions)
-        return content, positions
+    fillable_ranges = re.finditer("[-a-z]", cells)    # this one is still wrong
+    for m in fillable_ranges:
+        print(m.start(), '-', m.end(), m.group(0))
+
+    return fillable_ranges
 
 
-def fill_word_into_position(wrd, positions_of_cells, grid, axis=0):
+# todo: modify this method to align with format of a range
+def fill_word_into_position(wrd, a_range, grid, axis=0):
     # fill given word into given pos in given grid
     # return grid filled with the word
 
-    index = positions_of_cells['index']
-    start, stop = positions_of_cells['start'], positions_of_cells['stop']
+    index = a_range['index']
+    start, end = a_range.start() , a_range.end()
 
     filled_grid = grid.copy()
     if axis == 0:  # fill into row
-        filled_grid[index][start:stop] = wrd
+        filled_grid[index][start:end] = wrd
     else:  # fill to column
-        for rr in range(start, stop):
+        for rr in a_range(start, end):
             filled_grid[rr][index] = wrd[rr - start]
 
     return filled_grid
@@ -89,17 +81,16 @@ def try_filling(wrd, pos, grid, axis=0):  # axis 0 means row, 1 means col
     # i) len match: its length matches the no. of usable cells in pos
     # ii) letter match: its letters match with fixed letters in the row/column
 
-    usable_cells, positions_of_cells = find_usable_cells(pos, grid, axis)   # todo: change to find_usable_ranges
-    if usable_cells:
-        # todo: check filling for each usable range
-        if is_match(wrd, usable_cells):  # word and the usable cells match, so can fit
-            filled_grid = fill_word_into_position(wrd, pos, grid, axis)
+    fillable_ranges = find_fillable_ranges(pos, grid, axis)
+    for rr in fillable_ranges:
+        if is_match(wrd, rr):  # word and the range match, so can fit
+            filled_grid = fill_word_into_position(wrd, rr, grid, axis)
             print(filled_grid)
             return filled_grid
         else:
             return None
-    else:
-        pass
+
+    pass
 
 
 def crosswordPuzzle(grid, words):
