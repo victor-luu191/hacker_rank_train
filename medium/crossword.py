@@ -11,10 +11,10 @@ def find_fillable_ranges(axis, index, grid):
     # a range is a string with chars in [-, a-z], pattern "-* | [a-z]*"
     # positions must contain index of row/column and start/stop of usable cells
     if axis == 0:
-        print('\t finding fillable ranges in row', index)
+        # print('\t finding fillable ranges in row', index)
         cells = grid[index]
     else:
-        print('\t finding fillable ranges in column', index)
+        # print('\t finding fillable ranges in column', index)
         n_row = len(grid)
         cells = ''.join([grid[rr][index] for rr in range(n_row)])
 
@@ -42,15 +42,15 @@ def fill_word_into_position(wrd, index, grid, a_range, axis=0):
 def is_match(wrd, cells):
     # len match
     if len(cells) != len(wrd):
-        print('len of word and fillable range not match')
+        # print('\t len of word and fillable range not match')
         return False
     # letter match: filled letters in the cells must match letters at the same positions in wrd
     for i in range(len(cells)):
         if cells[i] != '-':
             if cells[i] != wrd[i]:
-                print('letters at', i, 'position of word and cells not match')
+                # print('letters at', i, 'position of word and cells not match')
                 return False
-    print('word and usable cells MATCH!')
+    print('\t found a matching range for word ', wrd, '! Filling the word into the range')
     return True
 
 
@@ -82,7 +82,8 @@ def try_filling(wrd, index, grid, axis=0):  # axis 0 means row, 1 means col
             return None
 
 
-def crosswordPuzzle(grid, words):
+# todo: need to handle backtrack correctly
+def crosswordPuzzle(grid, word_ls):
     # Ideas:
     # 1. seem that each row only has 1 word
     # just try putting a proper word into the first line possible,
@@ -93,21 +94,21 @@ def crosswordPuzzle(grid, words):
     # If the word cannot be fitted, then sth wrong and need to backtrack
 
     # STOP COND
-    if len(words) == 0:
+    if len(word_ls) == 0:
         return grid
     # =================================================
 
     # the first word must go some where in grid,
     # so try filling it into rows first, then try columns later
     # todo: (optimize) just jump to places where we can fit the  word
-    w0 = words[0]
+    w0 = word_ls[0]
     n_row, n_col = len(grid), len(grid[0])
     # try rows first
     print('Try filling word ', w0, ' into rows:')
     for rr in range(n_row):
         grid_filled_with_the_word = try_filling(w0, rr, grid, axis=0)
         if grid_filled_with_the_word:  # successful fill
-            res = crosswordPuzzle(grid_filled_with_the_word, words[1:])
+            res = crosswordPuzzle(grid_filled_with_the_word, word_ls[1:])
             if res:
                 return res
 
@@ -116,13 +117,18 @@ def crosswordPuzzle(grid, words):
     for cc in range(n_col):
         grid_filled_with_the_word = try_filling(w0, cc, grid, axis=1)
         if grid_filled_with_the_word:  # successful fill
-            res = crosswordPuzzle(grid_filled_with_the_word, words[1:])
+            res = crosswordPuzzle(grid_filled_with_the_word, word_ls[1:])
             if res:
                 return res
 
     # if all fail
-    print('cannot fill word ', w0, ' back tracking')
+    print('cannot fill word ', w0, ', back tracking')
+
+    # need some way to recover grid to state before filling the word
+    print('crossword at backtrack time:')
+
     pass
+
 
 if __name__ == '__main__':
     # fptr = open(os.environ['OUTPUT_PATH'], 'w')
