@@ -104,9 +104,8 @@ def try_filling(wrd, pos, grid, axis=0):  # axis 0 means row, 1 means col
 
 def crosswordPuzzle(grid, words):
     # Ideas:
-    # 1. seem that each row only has 1 word
-    # just try putting a proper word into the first line possible,
-    # then try to put remain words into remain grid, on condition that
+    # just try putting 1st word into the first place possible,
+    # then try to put remain words into the new grid, on condition that
     # certain cells have fixed chars
     # this will finally lead to when only 1 row/column and 1 word left (stop cond)
     # so just need to check if the word can be fit to the row.
@@ -130,6 +129,8 @@ def crosswordPuzzle(grid, words):
             res = crosswordPuzzle(grid_filled_with_the_word, words[1:])
             if res:
                 return res
+        else:
+            pass
 
     # try filling into cols
     for cc in range(n_cols):
@@ -138,6 +139,8 @@ def crosswordPuzzle(grid, words):
             res = crosswordPuzzle(grid_filled_with_the_word, words[1:])
             if res:
                 return res
+        else:
+            pass
 
 
 if __name__ == '__main__':
