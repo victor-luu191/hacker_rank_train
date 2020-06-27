@@ -38,11 +38,18 @@ def getMaxScore(jewels):
 
     indices = find_start_of_adjacent_dups(jewels)
     if indices:
-        scores = []
-        for i in indices:  # find max score if start by collecting pair j[i], j[i+1]
-            score_i = 1 + getMaxScore(jewels[:i] + jewels[i + 2:])
-            scores.append(score_i)
-        return max(scores)
+        # based on analysis, we do not need to try all options,
+        # any time we meet adjacent dups, can go ahead and delete them
+        # so can collect the first duplicated pair (or even block)
+        i = indices[0]
+        return 1 + getMaxScore(jewels[:i] + jewels[i + 2:])
+
+        ## try all possible ways of collecting gems
+        # scores = []
+        # for i in indices:  # find max score if start by collecting pair j[i], j[i+1]
+        #     score_i = 1 + getMaxScore(jewels[:i] + jewels[i + 2:])
+        #     scores.append(score_i)
+        # return max(scores)
     else:
         return 0
 
