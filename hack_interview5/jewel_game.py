@@ -14,16 +14,22 @@ import sys
 # The function accepts STRING jewels as parameter.
 #
 
-def find_start_of_adjacent_dups(s):
-    # given a string, return the list of all pairs of adjacent dups,
-    # for each such pair return its start idnex
 
-    indices = []
-    for i in range(len(s)-1):
+def find_first_repeated_block(s):
+    # given a string s,
+    # return the first block of repeated gems, ie. its starting index and its len
+    for i in range(len(s) - 1):
         if s[i] == s[i + 1]:
-            indices.append(i)
+            start = i
+            # find the len of block
+            for j in range(start, len(s) - 1):
+                if s[j] != s[j + 1]:  # end of block
+                    length = j - start + 1
+                    print('first repeated block starts at:', start, 'and have len:', length)
+                    return start, length
 
-    return indices
+    # no block of repeated gems
+    return None, None
 
 
 def getMaxScore(jewels):
@@ -36,20 +42,15 @@ def getMaxScore(jewels):
     if len(jewels) == 0:
         return 0
 
-    indices = find_start_of_adjacent_dups(jewels)
-    if indices:
-        # based on analysis, we do not need to try all options,
-        # any time we meet adjacent dups, can go ahead and delete them
-        # so can collect the first duplicated pair (or even block)
-        i = indices[0]
-        return 1 + getMaxScore(jewels[:i] + jewels[i + 2:])
+    # based on analysis, we do not need to try all options,
+    # any time we meet adjacent dups, can go ahead and delete them
+    # so can just collect the first duplicated pair (or even block)
 
-        ## try all possible ways of collecting gems
-        # scores = []
-        # for i in indices:  # find max score if start by collecting pair j[i], j[i+1]
-        #     score_i = 1 + getMaxScore(jewels[:i] + jewels[i + 2:])
-        #     scores.append(score_i)
-        # return max(scores)
+    start, length = find_first_repeated_block(jewels)
+
+    if start:
+        # return 1 + getMaxScore(jewels[:start] + jewels[start + 2:])
+        return 1 + getMaxScore(jewels[:start] + jewels[start + length:])
     else:
         return 0
 
