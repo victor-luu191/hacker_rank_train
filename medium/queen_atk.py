@@ -44,7 +44,7 @@ def find_cells_on_diag(r_q, c_q, diag=1):
     print(queen_diag)
     return queen_diag
 
-
+# todo: opt this
 def intersect(a1, a2):
     # given 2D arrays a1, a2, return their intersection
     return [e for e in a1 if e in a2]
@@ -155,7 +155,7 @@ def queensAttack(n, k, r_q, c_q, obstacles):
 
 if __name__ == '__main__':
     # fptr = open(os.environ['OUTPUT_PATH'], 'w')
-    fptr = open("queen_out3.txt", 'w')
+    fptr = open("queen_out13.txt", 'w')
 
     nk = input().split()
 
