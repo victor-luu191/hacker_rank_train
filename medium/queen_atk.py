@@ -3,30 +3,37 @@
 import os
 
 
-def find_upper_part(r, c, lower_left_boundary, upper_right_boundary, diag):
+def find_upper_part(cell, lower_left_boundary, upper_right_boundary, diag):
     # stop when the cell hits upper OR left/right boundary (if diag=1/diag=2)
-    upper_cell = [r + 1, c - 1]
+    r, c = cell[0], cell[1]
     if diag == 1:
         if r == upper_right_boundary or c == lower_left_boundary:
             return []
-        return [upper_cell] + find_upper_part(r + 1, c - 1, lower_left_boundary, upper_right_boundary, diag)
+        upper_cell = [r + 1, c - 1]
+        return [upper_cell] + find_upper_part(upper_cell, lower_left_boundary, upper_right_boundary, diag)
     if diag == 2:
         if r == upper_right_boundary or c == upper_right_boundary:
             return []
-        return [upper_cell] + find_upper_part(r + 1, c - 1, lower_left_boundary, upper_right_boundary, diag)
+        upper_cell = [r + 1, c + 1]
+        return [upper_cell] + find_upper_part(upper_cell, lower_left_boundary, upper_right_boundary, diag)
 
 
-def find_lower_part(r, c, lower_left_boundary, upper_right_boundary, diag):
+def find_lower_part(cell, lower_left_boundary, upper_right_boundary, diag):
     # stop when the cell hits lower boundary OR right/left boundary (if diag=1/diag=2)
-    lower_cell = [r - 1, c + 1]
+
+    r, c = cell[0], cell[1]
     if diag == 1:
+        # if hit lower boundary then stop
         if r == lower_left_boundary or c == upper_right_boundary:
             return []
-        return [lower_cell] + find_lower_part(r - 1, c + 1, lower_left_boundary, upper_right_boundary, diag)
+        # else, add the cell below given cell and continue if possible
+        lower_cell = [r - 1, c + 1]
+        return [lower_cell] + find_lower_part(lower_cell, lower_left_boundary, upper_right_boundary, diag)
     if diag == 2:
         if r == lower_left_boundary or c == lower_left_boundary:
             return []
-        return [lower_cell] + find_lower_part(r - 1, c + 1, lower_left_boundary, upper_right_boundary, diag)
+        lower_cell = [r - 1, c - 1]
+        return [lower_cell] + find_lower_part(lower_cell, lower_left_boundary, upper_right_boundary, diag)
 
 
 def find_cells_on_diag(r_q, c_q, lower_left_boundary, upper_right_boundary, diag=1):
@@ -36,9 +43,10 @@ def find_cells_on_diag(r_q, c_q, lower_left_boundary, upper_right_boundary, diag
     # First main diag:
     # cases: queen above/below/on 1st main diag
     # above: queen 1st diag will touch upper (row=n) and right (col=n) boundaries,
-    upper_part = find_upper_part(r_q, c_q, lower_left_boundary, upper_right_boundary, diag)
-    lower_part = find_lower_part(r_q, c_q, lower_left_boundary, upper_right_boundary, diag)
     queen_cell = [r_q, c_q]
+    upper_part = find_upper_part(queen_cell, lower_left_boundary, upper_right_boundary, diag)
+    lower_part = find_lower_part(queen_cell, lower_left_boundary, upper_right_boundary, diag)
+
     queen_diag = upper_part + [queen_cell] + lower_part
     print('cells on queen diag', diag, ':')
     print(queen_diag)
@@ -53,18 +61,18 @@ def intersect(a1, a2):
 def cal_cells_queen_attack_on_diag(r_q, obs_arr, diag_q):
     above_obstacle_rows = [obs[0] for obs in obs_arr if obs[0] > r_q]
     if above_obstacle_rows:
-        upper_min = min(above_obstacle_rows)
+        end_atk = min(above_obstacle_rows) - 1
     else:
         # if no obstace above queen, it can atk up to upper bound of its diag
-        upper_min = max([cells[0] for cells in diag_q])
+        end_atk = max([cells[0] for cells in diag_q])
 
     below_obstacle_rows = [obs[0] for obs in obs_arr if obs[0] < r_q]
     if below_obstacle_rows:
-        lower_max = max(below_obstacle_rows)
+        start_atk = max(below_obstacle_rows) + 1
     else:
-        lower_max = min([cells[0] for cells in diag_q])
+        start_atk = min([cells[0] for cells in diag_q])
 
-    return upper_min - lower_max - 2  # exclude also the cell queen is on
+    return end_atk - start_atk  # exclude also the cell queen is on
 
 
 def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1):
@@ -80,16 +88,16 @@ def find_column_cells_queen_attack(r_q, c_q, obstacles, bsize):
     obstacles_above_queen = [obs for obs in obstacles if obs[1] == c_q and obs[0] > r_q]
     obstacles_below_queen = [obs for obs in obstacles if obs[1] == c_q and obs[0] < r_q]
     if obstacles_above_queen:
-        above_min = min([obs[0] for obs in obstacles_above_queen])
+        end_of_atk = min([obs[0] for obs in obstacles_above_queen]) - 1
     else:
-        above_min = bsize
+        end_of_atk = bsize
 
     if obstacles_below_queen:
-        below_max = max([obs[0] for obs in obstacles_below_queen])
+        start_of_atk = max([obs[0] for obs in obstacles_below_queen]) + 1
     else:
-        below_max = 1
+        start_of_atk = 1
 
-    col_atks = above_min - 1 - below_max - 1  # exclude cell the queen is on
+    col_atks = end_of_atk - start_of_atk  # exclude cell the queen is on
     print('cells queen can atk on its column:', col_atks)
     return col_atks
 
@@ -100,17 +108,16 @@ def find_row_cells_queen_attack(r_q, c_q, obstacles, bsize):
     # get column of closest_obstacle_on_left
 
     if obstacles_on_left_queen:
-        left_max = max([obs[1] for obs in obstacles_on_left_queen])
-    else:   # no obs, so can atk up to left boundary
-        left_max = 1
-
+        start_atk = max([obs[1] for obs in obstacles_on_left_queen]) + 1
+    else:  # no obs, so can atk up to left boundary
+        start_atk = 1
 
     if obstacles_on_right_queen:
-        right_min = min([obs[1] for obs in obstacles_on_right_queen])
-    else: # no obs, so can atk up to right boundary
-        right_min = bsize
+        end_atk = min([obs[1] for obs in obstacles_on_right_queen]) - 1
+    else:  # no obs, so can atk up to right boundary
+        end_atk = bsize
     # cells queen can atk on row
-    row_atks = right_min - 1 - left_max - 1  # exclude cell the queen is on
+    row_atks = end_atk - start_atk  # already exclude cell the queen is on
     print('cells queen can atk on its row:', row_atks)
     return row_atks
 
