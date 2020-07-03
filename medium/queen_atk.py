@@ -44,11 +44,6 @@ def find_cells_on_diag(r_q, c_q, diag=1):
     print(queen_diag)
     return queen_diag
 
-# todo: opt this
-def intersect(a1, a2):
-    # given 2D arrays a1, a2, return their intersection
-    return [e for e in a1 if e in a2]
-
 
 def cal_cells_queen_attack_on_diag(r_q, obs_arr, diag_q):
     above_obstacle_rows = [obs[0] for obs in obs_arr if obs[0] > r_q]
@@ -67,14 +62,22 @@ def cal_cells_queen_attack_on_diag(r_q, obs_arr, diag_q):
     return end_atk - start_atk  # exclude also the cell queen is on
 
 
-def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1):
+def find_obstacles_on_queen_diag(obstacles, r_q, c_q, diag):
+    if diag == 1:
+        return [obs for obs in obstacles if obs[0] + obs[1] == r_q + c_q]
+    if diag == 2:
+        return [obs for obs in obstacles if obs[0] - obs[1] == r_q - c_q]
+
+
+def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=1):
     diag_of_queen = find_cells_on_diag(r_q, c_q, diag=diag)
     if not obstacles:
         cells_queen_attack_on_diag = len(diag_of_queen) - 1
         print('cells queen can atk on diag', diag, ':', cells_queen_attack_on_diag)
         return cells_queen_attack_on_diag
 
-    obstacles_on_diag_of_queen = intersect(obstacles, diag_of_queen)
+    obstacles_on_diag_of_queen = find_obstacles_on_queen_diag(obstacles, r_q, c_q, diag)
+
     cells_queen_attack_on_diag = cal_cells_queen_attack_on_diag(r_q, obstacles_on_diag_of_queen, diag_of_queen)
     print('cells queen can atk on diag', diag, ':', cells_queen_attack_on_diag)
     return cells_queen_attack_on_diag
@@ -145,17 +148,17 @@ def queensAttack(n, k, r_q, c_q, obstacles):
     col_atks = find_column_cells_queen_attack(r_q, c_q, obstacles, bsize=n)
 
     # find cells queens can atk on its 1st diag
-    first_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1)
+    first_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=1)
 
     # find cells queens can atk on its 2nd diag
-    second_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=2)
+    second_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=2)
 
     return row_atks + col_atks + first_diag_atks + second_diag_atks
 
 
 if __name__ == '__main__':
-    # fptr = open(os.environ['OUTPUT_PATH'], 'w')
-    fptr = open("queen_out13.txt", 'w')
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    # fptr = open("queen_out13.txt", 'w')
 
     nk = input().split()
 
