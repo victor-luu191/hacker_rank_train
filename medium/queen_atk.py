@@ -3,40 +3,32 @@
 import os
 
 
-def find_upper_part(cell, lower_left_boundary, upper_right_boundary, diag):
+def find_upper_part(cell, diag, bsize):
     # stop when the cell hits upper OR left/right boundary (if diag=1/diag=2)
     r, c = cell[0], cell[1]
     if diag == 1:
-        if r == upper_right_boundary or c == lower_left_boundary:
-            return []
-        upper_cell = [r + 1, c - 1]
-        return [upper_cell] + find_upper_part(upper_cell, lower_left_boundary, upper_right_boundary, diag)
+        bound = min(bsize - r, c - 1) + 1
+        return [[r + x, c - x] for x in range(1, bound)]
+
     if diag == 2:
-        if r == upper_right_boundary or c == upper_right_boundary:
-            return []
-        upper_cell = [r + 1, c + 1]
-        return [upper_cell] + find_upper_part(upper_cell, lower_left_boundary, upper_right_boundary, diag)
+        bound = min(bsize - r, bsize - c) + 1
+        return [[r + x, c + x] for x in range(1, bound)]
 
 
-def find_lower_part(cell, lower_left_boundary, upper_right_boundary, diag):
+def find_lower_part(cell, diag, bsize):
     # stop when the cell hits lower boundary OR right/left boundary (if diag=1/diag=2)
 
     r, c = cell[0], cell[1]
     if diag == 1:
-        # if hit lower boundary then stop
-        if r == lower_left_boundary or c == upper_right_boundary:
-            return []
-        # else, add the cell below given cell and continue if possible
-        lower_cell = [r - 1, c + 1]
-        return [lower_cell] + find_lower_part(lower_cell, lower_left_boundary, upper_right_boundary, diag)
+        bound = min(r - 1, bsize - c) + 1
+        return [[r - x, c + x] for x in range(1, bound)]
+
     if diag == 2:
-        if r == lower_left_boundary or c == lower_left_boundary:
-            return []
-        lower_cell = [r - 1, c - 1]
-        return [lower_cell] + find_lower_part(lower_cell, lower_left_boundary, upper_right_boundary, diag)
+        bound = min(r - 1, c - 1) + 1
+        return [[r - x, c - x] for x in range(1, bound)]
 
 
-def find_cells_on_diag(r_q, c_q, lower_left_boundary, upper_right_boundary, diag=1):
+def find_cells_on_diag(r_q, c_q, diag=1):
     # given queen's position and board size,
     # return the first/second diag passing the queen
 
@@ -44,18 +36,13 @@ def find_cells_on_diag(r_q, c_q, lower_left_boundary, upper_right_boundary, diag
     # cases: queen above/below/on 1st main diag
     # above: queen 1st diag will touch upper (row=n) and right (col=n) boundaries,
     queen_cell = [r_q, c_q]
-    upper_part = find_upper_part(queen_cell, lower_left_boundary, upper_right_boundary, diag)
-    lower_part = find_lower_part(queen_cell, lower_left_boundary, upper_right_boundary, diag)
+    upper_part = find_upper_part(queen_cell, diag, bsize=n)
+    lower_part = find_lower_part(queen_cell, diag, bsize=n)
 
     queen_diag = upper_part + [queen_cell] + lower_part
     print('cells on queen diag', diag, ':')
     print(queen_diag)
     return queen_diag
-
-
-def intersect(a1, a2):
-    # given 2D arrays a1, a2, return their intersection
-    return [e for e in a1 if e in a2]
 
 
 def cal_cells_queen_attack_on_diag(r_q, obs_arr, diag_q):
@@ -75,9 +62,21 @@ def cal_cells_queen_attack_on_diag(r_q, obs_arr, diag_q):
     return end_atk - start_atk  # exclude also the cell queen is on
 
 
-def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1):
-    diag_of_queen = find_cells_on_diag(r_q, c_q, lower_left_boundary=1, upper_right_boundary=n, diag=diag)
-    obstacles_on_diag_of_queen = intersect(obstacles, diag_of_queen)
+def find_obstacles_on_queen_diag(obstacles, r_q, c_q, diag):
+    if diag == 1:
+        return [obs for obs in obstacles if obs[0] + obs[1] == r_q + c_q]
+    if diag == 2:
+        return [obs for obs in obstacles if obs[0] - obs[1] == r_q - c_q]
+
+
+def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=1):
+    diag_of_queen = find_cells_on_diag(r_q, c_q, diag=diag)
+    if not obstacles:
+        cells_queen_attack_on_diag = len(diag_of_queen) - 1
+        print('cells queen can atk on diag', diag, ':', cells_queen_attack_on_diag)
+        return cells_queen_attack_on_diag
+
+    obstacles_on_diag_of_queen = find_obstacles_on_queen_diag(obstacles, r_q, c_q, diag)
 
     cells_queen_attack_on_diag = cal_cells_queen_attack_on_diag(r_q, obstacles_on_diag_of_queen, diag_of_queen)
     print('cells queen can atk on diag', diag, ':', cells_queen_attack_on_diag)
@@ -85,33 +84,38 @@ def find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1):
 
 
 def find_column_cells_queen_attack(r_q, c_q, obstacles, bsize):
+    if not obstacles:
+        col_atks = bsize - 1
+        print('cells queen can atk on its column:', col_atks)
+        return col_atks
+    # else
     obstacles_above_queen = [obs for obs in obstacles if obs[1] == c_q and obs[0] > r_q]
     obstacles_below_queen = [obs for obs in obstacles if obs[1] == c_q and obs[0] < r_q]
     if obstacles_above_queen:
         end_of_atk = min([obs[0] for obs in obstacles_above_queen]) - 1
     else:
         end_of_atk = bsize
-
     if obstacles_below_queen:
         start_of_atk = max([obs[0] for obs in obstacles_below_queen]) + 1
     else:
         start_of_atk = 1
-
     col_atks = end_of_atk - start_of_atk  # exclude cell the queen is on
     print('cells queen can atk on its column:', col_atks)
     return col_atks
 
 
 def find_row_cells_queen_attack(r_q, c_q, obstacles, bsize):
+    if not obstacles:  # can atk the whole row except for its cell
+        row_atks = bsize - 1
+        print('cells queen can atk on its row:', row_atks)
+        return row_atks
+    # else
     obstacles_on_left_queen = [obs for obs in obstacles if obs[0] == r_q and obs[1] < c_q]
     obstacles_on_right_queen = [obs for obs in obstacles if obs[0] == r_q and obs[1] > c_q]
-    # get column of closest_obstacle_on_left
-
     if obstacles_on_left_queen:
         start_atk = max([obs[1] for obs in obstacles_on_left_queen]) + 1
     else:  # no obs, so can atk up to left boundary
         start_atk = 1
-
     if obstacles_on_right_queen:
         end_atk = min([obs[1] for obs in obstacles_on_right_queen]) - 1
     else:  # no obs, so can atk up to right boundary
@@ -123,6 +127,7 @@ def find_row_cells_queen_attack(r_q, c_q, obstacles, bsize):
 
 
 # Complete the queensAttack function below.
+# todo: find out if k is really not needed or it can be used to speed up
 def queensAttack(n, k, r_q, c_q, obstacles):
     # obstacles only block queen when they are on the atk paths,
     # any time we meet an obs, the regions, queen can atk is reduced
@@ -143,16 +148,17 @@ def queensAttack(n, k, r_q, c_q, obstacles):
     col_atks = find_column_cells_queen_attack(r_q, c_q, obstacles, bsize=n)
 
     # find cells queens can atk on its 1st diag
-    first_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=1)
+    first_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=1)
 
     # find cells queens can atk on its 2nd diag
-    second_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, n, diag=2)
+    second_diag_atks = find_cells_queen_atk_on_diag(r_q, c_q, obstacles, diag=2)
 
     return row_atks + col_atks + first_diag_atks + second_diag_atks
 
 
 if __name__ == '__main__':
     fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    # fptr = open("queen_out13.txt", 'w')
 
     nk = input().split()
 
