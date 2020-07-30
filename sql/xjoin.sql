@@ -10,7 +10,7 @@ from
 			(select f1.x as x1, f1.y as y1, f2.x as x2, f2.y as y2
 			from
 				(select * from functions where x < y) as f1
-				cross join (select * from functions where x < y) as f2
+				cross join (select * from functions where x > y) as f2
 			) as t1
 		where t1.x1 = t1.y2 and t1.y1 = t1.x2
 		) 
@@ -27,16 +27,3 @@ from
 		)
 	) as res
 order by res.x
-
--- wrong answer
--- =================================================
-select tmp.x1, tmp.y1
-from
-	(select f1.x as x1, f1.y as y1, f2.x as x2, f2.y as y2
-	from
-		(select * from functions) as f1
-		cross join (select * from functions) f2
-	order by x1, y1
-	) as tmp
-where tmp.x1 = tmp.y2 and tmp.y1 = tmp.x2
-order by tmp.x1
