@@ -1,6 +1,14 @@
+def find_end_of_1st_range(arr):
+    # given a sorted array starting at 0, find end of the range containing 0
+    # it is the first index i which arr[i] != i
+    for i in range(0, len(arr)):
+        if arr[i] != i:
+            return i
+    return len(arr)
+
+
 def composeRanges(nums):
-    # a single item can be a range
-    # a range is made from contiguous integers, so if a_(i+1) - a_i = 1 then a range can be formed as [a_i, a_(i+1), ...]
+    # a single item can be a range.
     # say we can make a range [a0, ..., ak], then need to find ranges in remaining part.
     # So a simple sol is: ['a0 -> ak'] + composeRanges(a[k+1:])
 
@@ -11,19 +19,18 @@ def composeRanges(nums):
     if len(nums) == 1:
         return ['{}'.format(nums[0])]
 
-    i, range_contain_a0 = find_1st_range(nums)
-    return [range_contain_a0] + composeRanges(nums[i:])
+    first_range, k = find_1st_range(nums)
+    return [first_range] + composeRanges(nums[k:])
 
 
 def find_1st_range(nums):
-    # find the range containing first element a0
-
-    in_range = True
-    i = 0
-    while in_range and i < len(nums):
-        i += 1
-        in_range = (nums[i] - nums[i - 1] == 1)
-
-    # the range is from a0 to a[i-1]
-    range_contain_1st_element = "{} -> {}".format(nums[0], nums[i - 1])
-    return i, range_contain_1st_element
+    # a natural range is 0,1,2,..., thus  get back to the natural range by translating items by amount nums[0]
+    trans_arr = [n - nums[0] for n in nums]
+    # in the natural range, a[i] == i
+    k = find_end_of_1st_range(trans_arr)
+    if k > 1:
+        first_range = '->'.join([str(nums[0]), str(nums[k - 1])])
+    else:
+        first_range = [str(nums[0])]
+    print('first range: ', first_range)
+    return first_range, k
