@@ -56,14 +56,13 @@ def mapDecoding(message):
         decodes[2] = 0
 
     for i in range(3, len(decodes)):
-
         one_digit = message[i - 1]
         two_digits = message[i - 2:i]
-        can_decode_one_digit = int(one_digit) > 0
+        can_decode_one_digit = (int(one_digit) > 0)
         if two_digits[0] == '0':  # if leading of two digits is 0, decoding two digits is invalid
             decodes[i] = can_decode_one_digit * decodes[i - 1]
         else:
-            can_decode_two_digit = int(two_digits) <= N_LETTER
+            can_decode_two_digit = (int(two_digits) <= N_LETTER)
             decodes[i] = can_decode_one_digit * decodes[i - 1] + can_decode_two_digit * decodes[i - 2]
 
         print('msg: ' + message[:i])
