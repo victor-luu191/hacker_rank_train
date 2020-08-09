@@ -7,8 +7,28 @@ letters = dict(zip(keys, values))
 CONST = 10 ** 9 + 7
 
 
+def can_decode(s):
+    # given a string of at most two digits, check if it is a valid code of a letter
+    if len(s) == 1:
+        return int(s) > 0
+    if len(s) == 2:
+        # valid iff leading of two digits must be non-zero and value <= n_letter
+        return s[0] != '0' and int(s) <= N_LETTER
+    pass
+
+
 def mapDecoding(message):
     # max value of a letter is 26, min value is 1.
+    # Edge cases:
+    # Any message that starts with the digit '0' is automatically invalid.
+    # If sequences '00', '30', '40', '50', ...,'90' ever show up, the whole msg is also invalid
+    if message.startswith('0'):
+        return 0
+    invalid_seqs = ['00', '30', '40', '50', ..., '90']
+    for s in invalid_seqs:
+        if s in message:
+            return 0
+
     # 1st digit surely decodes to a letter, then decode remaining part
     # if first 2 digits <= 26 then they can be decoded to a letter too, then decode remains
 
@@ -21,7 +41,6 @@ def mapDecoding(message):
             return 0
         return 1
 
-    #  a case where no decoding is valid msg='130': all [1,3,0], [1, 30], [13,0] invalid
     # at most 2 digits can be used to decode each time, thus last letter is decoded by either the last digit
     # or two last digits
 
@@ -58,12 +77,7 @@ def mapDecoding(message):
     for i in range(3, len(decodes)):
         one_digit = message[i - 1]
         two_digits = message[i - 2:i]
-        can_decode_one_digit = (int(one_digit) > 0)
-        if two_digits[0] == '0':  # if leading of two digits is 0, decoding two digits is invalid
-            decodes[i] = can_decode_one_digit * decodes[i - 1]
-        else:
-            can_decode_two_digit = (int(two_digits) <= N_LETTER)
-            decodes[i] = can_decode_one_digit * decodes[i - 1] + can_decode_two_digit * decodes[i - 2]
+        decodes[i] = can_decode(one_digit) * decodes[i - 1] + can_decode(two_digits) * decodes[i - 2]
 
         print('msg: ' + message[:i])
         print('no. of ways to decode it:', decodes[i])
