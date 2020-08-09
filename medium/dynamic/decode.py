@@ -59,26 +59,12 @@ def mapDecoding(message):
 
         one_digit = message[i - 1]
         two_digits = message[i - 2:i]
+        can_decode_one_digit = int(one_digit) > 0
         if two_digits[0] == '0':  # if leading of two digits is 0, decoding two digits is invalid
-            can_decode_one_digit = int(one_digit) > 0
             decodes[i] = can_decode_one_digit * decodes[i - 1]
         else:
-            # todo: use indicator to shorten these nested if-else
-            if int(one_digit) > 0 and int(two_digits) <= N_LETTER:  # case i): both ways of decoding are valid
-                print('can either decode {} or {}'.format(one_digit, two_digits))
-                decodes[i] = decodes[i - 1] + decodes[i - 2]
-            else:  # only one of them is valid or none is valid
-                if int(two_digits) > N_LETTER:  # decoding both 2 last digits is NOT valid
-                    # case ii)
-                    if int(one_digit) > 0:
-                        print('can only decode' + one_digit)
-                        decodes[i] = decodes[i - 1]
-                    else:
-                        print('no valid decoding')
-
-                else:  # case iii)
-                    print('can only decode' + two_digits)
-                    decodes[i] = decodes[i - 2]
+            can_decode_two_digit = int(two_digits) <= N_LETTER
+            decodes[i] = can_decode_one_digit * decodes[i - 1] + can_decode_two_digit * decodes[i - 2]
 
         print('msg: ' + message[:i])
         print('no. of ways to decode it:', decodes[i])
