@@ -1,3 +1,9 @@
 
 medium/time_delta_out.txt
 medium/time_delta_out.txt
+medium/graph/bfsshortreach-testcases.zip
+medium/graph/bfsshortreach-testcases/input/input00.txt
+medium/graph/bfsshortreach-testcases/input/input07.txt
+medium/graph/bfsshortreach-testcases/output/output00.txt
+medium/graph/bfsshortreach-testcases/output/output07.txt
+medium/graph/out/bfs_00.txt
