@@ -27,7 +27,8 @@ def lookup_dist(v, distances):
 
 
 def bfs(n, m, edges, s):
-    # for bfs, we need to use a queue
+    # For bfs, we need to use a queue and a fast implementation of queue in python is
+    # via collections.deque, with O(1) append and popleft
 
     # Example:
     # pop s from the queue, visit s to get its n_hop (=0)
@@ -40,21 +41,19 @@ def bfs(n, m, edges, s):
     # ii) for each u in N(t): update n_hop(u) = n_hop(t) + 1, but only if n_hop(u) is unknown
     # iii) add u's to the queue
 
-    # queue = deque()
-    queue = list()
+    queue = deque()
     queue.append(s)
     # keep track of which vertices already added to the queue thus processed
     vertices = [i+1 for i in range(n)]
     values = [False] * n
     processed = dict(zip(vertices, values))
 
-    print(queue)
     #  a dict to keep track of n_hop at each level
     n_hop = dict()
     n_hop[s] = 0
 
     while queue:
-        r = queue.pop()
+        r = queue.popleft()
         n_hop_r_ = n_hop[r]  # visit r
         processed[r] = True
         neighbors = find_neighbors(r, edges)
