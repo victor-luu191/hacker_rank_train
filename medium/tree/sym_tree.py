@@ -47,6 +47,29 @@ def get_values(p, t):
         return [t.value] + get_values(p[1:], t.right)
 
 
+def is_valid_path(bs, t):
+    # given a tree t and a binary str representing a path, check if it is a valid path in t,
+    # eg. it is a path from root to a leaf in t
+    current = t
+
+    # follow 0/1 in the str, if any move is invalid then return false
+    for d in bs:
+        if d == '0' and not current.left:
+            return False
+        if d == '0' and current.left:
+            current = current.left
+        if d == '1' and not current.right:
+            return False
+        if d == '1' and current.right:
+            current = current.right
+
+    # though we complete the whole str, if not reach a leaf yet then the str is not valid
+    # as it stops in the middle of a path
+    if (not current.left) and (not current.right):
+        return True
+    return False
+
+
 def isTreeSymmetric(t):
     # symmetric around its center, i.e. each side mirrors the other.
 
@@ -68,13 +91,16 @@ def isTreeSymmetric(t):
 
     for lp in left_paths:
         rp = make_mirror_path(lp)
-        print('left path:', lp)
-        print('its mirror path:', rp)
+        # print('left path:', lp)
+        # print('its mirror path:', rp)
         left_values = get_values(lp, t)
         right_values = get_values(rp, t)
-        print('left values:', left_values)
-        print('right values:', right_values)
-        sym_cond = (rp in paths) and (left_values == right_values)
+        # print('left values:', left_values)
+        # print('right values:', right_values)
+        # todo: optimize the check if rp is a valid path
+
+        # sym_cond = (rp in right_paths) and (left_values == right_values)
+        sym_cond = is_valid_path(rp, t) and (left_values == right_values)
         if not sym_cond:
             return False
     return True
