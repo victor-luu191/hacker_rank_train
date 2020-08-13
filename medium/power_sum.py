@@ -31,7 +31,10 @@ def power_sum_lb(x, n, lb=1):
 
 
 if __name__ == '__main__':
-    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    try:
+        fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    except PermissionError:
+        fptr = open('power_sum_out.txt', 'w')
 
     X = int(input())
 
