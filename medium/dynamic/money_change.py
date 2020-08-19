@@ -16,6 +16,30 @@ import sys
 #  2. LONG_INTEGER_ARRAY c: contain values of coins
 #
 
+def dyn_get_ways(n, coins):
+    # Overlap can also happen, as we may need to compute getWays(k, c) twice,
+    # so we need to avoid it via dynamic programming,
+    # ie. use an array to store values already computed and we go from small to large amount
+    # for 0 <= i <= n and 1 <= k <= m,
+    # let ways[i, k] = number of ways to change amount i using k last coins,
+    # then what we need is ways[n, m]
+    # ways[i, k] = sum_j ways[i - coins[-j], j], for j in [1:k]
+    print('sorted coins:', coins)
+    m = len(coins)
+    # ways = np.zeros((n+1, m))
+    rows, cols = n + 1, m + 1
+    ways = [[0 for i in range(cols)] for j in range(rows)]
+    ways[0] = [1] * (m + 1)
+    min_coin = coins[0]
+    for i in range(min_coin, n + 1):
+        for k in range(1, m + 1):
+            for j in range(1, k + 1):
+                if not (coins[-j] > i):
+                    ways[i][k] += ways[i - coins[-j]][j]
+
+    return ways[n][m]
+
+
 def getWays(n, coins):
     # the first coin can be any value not exceeding n, say c[i],
     # then remaining coins must sum to n - c[i], so have getWays(n - c[i], c)
@@ -27,27 +51,8 @@ def getWays(n, coins):
     # get c\{c[j]: j < i} (assume that the coins already sorted).
     # So formula should be: sum_i getWays(n - c[i], c\{c[j]: j < i})
 
-    # Overlap can also happen, say we may need to compute getWays(k, c) twice,
-    # so we need to avoid it via dynamic programming  (later)
-    if n == 0:
-        return 1  # use no coin is considered as 1 way, also we keep reducing n and when it reach 0 meaning we have a correct change
-
-    if (n > 0) and (n < min(coins)):
-        return 0
-    else:
-        # find values not exceeding n
-        valid_coins = [c for c in coins if c <= n]
-
-        res = 0
-        for c in valid_coins:
-            # we use it as the 1st coin
-
-            # drop coins of values smaller than c
-            larger = [d for d in valid_coins if d >= c]
-            # as c is now the first coin, remains coins must sum to n - c
-            res += getWays(n - c, larger)
-
-        return res
+    sorted_coins = sorted(coins)
+    return dyn_get_ways(n, sorted_coins)
 
 
 if __name__ == '__main__':
