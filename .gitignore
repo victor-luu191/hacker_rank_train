@@ -7,3 +7,8 @@ medium/graph/bfsshortreach-testcases/input/input07.txt
 medium/graph/bfsshortreach-testcases/output/output00.txt
 medium/graph/bfsshortreach-testcases/output/output07.txt
 medium/graph/out/bfs_00.txt
+medium/abbr-testcases/input/input6.txt
+medium/abbr-testcases/input/test1.txt
+medium/abbr-testcases/output/my_out_1.txt
+medium/abbr-testcases/output/my_out_6.txt
+medium/abbr-testcases/output/output6.txt
