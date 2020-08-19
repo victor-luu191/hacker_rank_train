@@ -4,6 +4,8 @@ import os
 import string
 
 UPPERS = string.ascii_uppercase
+
+
 def del_lower(a):
     return [ch for ch in a if ch in UPPERS]
 
@@ -23,39 +25,57 @@ def abbreviation(a, b):
 
     # Match b[0]
     # find first letter in a which can be matched with b0, either as is or via capitalize
-    idx = find_1st_letter_matchable(a, b[0])
-    if idx < 0: # no matchable letter
+    first_matches = find_1st_matches(a, b[0])
+    if not first_matches:  # no matchable letter
         return 'NO'
 
-    # there is a matching letter at idx,
-    # First need to drop all letters bf idx as they are unmatchable,
+    res = []
+    for i in first_matches:
+        r_i = match_first_letter(b, a, i)
+        res.append(r_i)
+    if 'YES' in res:
+        return 'YES'
+    return 'NO'
+
+
+def match_first_letter(b, a, i):
+    # Given that b[0] can be matched with a[i], check if a[i+1:] can match with b[1:]
+
+    # First need to drop all letters bf idx i as they are unmatchable,
     # however we may not be able to drop all of them, as only allowed to drop lower letters,
     # UPPER letters will be left => so cannot match
-    left = del_lower(a[:idx])
+    left = del_lower(a[:i])
     if left:
         return 'NO'
-
     # successfully delete all unmatched letters,
-    # left is a[idx:], as a[idx] is matched to b[0] already, just need to check matching for remains of a and b
-    return abbreviation(a[idx + 1:], b[1:])
+    # left is a[idx:], as a[idx] is matched to b[0] already,
+    print('a[idx] is', a[i])
+    print('b[0]:', b[0])
+    # just need to check matching for remains of a and b
+    a_rem = a[i + 1:]
+    b_rem = b[1:]
+    print('remain of a:', a_rem)
+    print('remain of b:', b_rem)
+    return abbreviation(a_rem, b_rem)
 
 
-def find_1st_letter_matchable(a, ch):
+def find_1st_matches(a, ch):
     if (ch in a) and (ch.lower() in a):
-        return min(a.index(ch), a.index(ch.lower()))
+        return [a.index(ch), a.index(ch.lower())]
     if (ch in a) and (not ch.lower() in a):
-        return a.index(ch)
+        return [a.index(ch)]
     if (not ch in a) and (ch.lower() in a):
-        return a.index(ch.lower())
+        return [a.index(ch.lower())]
     if (ch not in a) and (ch.lower() not in a):
-        return -1
+        return []
 
 
 if __name__ == '__main__':
     try:
         fptr = open(os.environ['OUTPUT_PATH'], 'w')
     except PermissionError:
-        fptr = open('../abbr-testcases/output/test3.txt', 'w')
+        t = int(input())
+        fptr = open('../abbr-testcases/output/my_out_{}.txt'.format(t) , 'w')
 
     q = int(input())
 
