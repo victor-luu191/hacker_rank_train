@@ -175,7 +175,7 @@ if __name__ == '__main__':
     try:
         fptr = open(os.environ['OUTPUT_PATH'], 'w')
     except PermissionError:
-        fptr = open('time_delta_out.txt', 'w')
+        fptr = open('../../../tests/time_delta_out.txt', 'w')
 
     t = int(input())
 
