@@ -14,12 +14,15 @@ def find_uniq_values(arr):
 def equal(arr):
     # return min no. of ops needed to equalize all elements in arr
     # Idea:
-    # Each time, must increase the smallest value min_v to reach some value, thus reducing at least
-    # 1 inequal.
-    # Consider two different values v and v+d, if we keep boosting them both, then the diff
-    # is always d (as each time we boost them with same value). And they keep being different.
-    # Thus, there must be some time that we start fixing the bigger one and boosting the smaller until
-    # it reach the larger. the number of ops needed will be min_ops(d)
+    # i) if arr only contains two groups with v and v+d bars, then we just keep boosting guys with
+    # less bars until all equals, then will need min_ops(d) * count(v+d).
+    # process: fix a guy wit v+d bars,
+    # boost all guys with v bars to v+d, then other guys with v+d bars, if have, will get v+2d bars.
+    # So the diff continue to be d and we can repeat the process, this time with one less inequal.
+    # repeat until all larger guys are absorbed, there are count(v+d), so totally count(v+d) * min_ops(d)
+    # ii) if more than 2 groups, then start with the group with min bars, boost it to reach some other group,
+    # then the number of groups will be reduced by 1 and we can continue until there is only 1 group,
+    # ie. all equal
 
     uniq_values = sorted(find_uniq_values(arr))
     min_v = uniq_values[0]
@@ -28,27 +31,22 @@ def equal(arr):
     if m == 1:
         return 0
 
-    # else,
-    next_value = uniq_values[1]
-    sort_arr = sorted(arr)
-    fix_idx = sort_arr.index(next_value)
-    diff = next_value - min_v
-    new_arr = (fix_idx + 1) * [sort_arr[fix_idx]] + \
-              [sort_arr[i] + diff for i in range(fix_idx + 1, n)]
-    return cal_min_ops(diff) + equal(new_arr)
-
-    # todo: speed up
-    # count = sort_arr.count(next_value)
-    # if m==2:
-    #     return count * cal_min_ops(diff)
-    # # there are at least 3 diff values: min_v, next_value and next_next_value, thus we first need to
-    # # convert min_v to next value
-    # # assume the next value occur k times, then we need to do k conversions
-    # k = count
-    # idx = k + fix_idx
-    # n_ops = k * cal_min_ops(diff)
-    # new_arr = idx * [next_value] + [sort_arr[j] + k * diff for j in range(idx, n)]
-    # return n_ops + equal(new_arr)
+    # else, need to give chocolates to those with min number so that they can be equal with another group,
+    # but not know which group is best, so try all
+    n_min_ops = []
+    for v in uniq_values[1:]:
+        # boost the group with min_v  to absorb the group with v bars, then repeat the process on new
+        # dist of chocolates
+        diff = v - min_v
+        count_v = arr.count(v)
+        n_ops = count_v * cal_min_ops(diff)
+        # two groups with min_v and v are merged together
+        # other groups are boosted by count(v) * diff
+        boost_amt = count_v * diff
+        new_arr = [min_v + boost_amt for w in arr if w in [min_v, v]] + \
+                  [w + boost_amt for w in arr if w not in [min_v, v]]
+        n_min_ops.append(n_ops + equal(new_arr))
+    return min(n_min_ops)
 
 
 def cal_min_ops(diff):
