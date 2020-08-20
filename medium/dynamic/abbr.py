@@ -57,17 +57,9 @@ def can_match(b, a):
         return 1
     else:  # try matching b[0] with its later occurences  in a
         # todo: optimizing code
-        j = find_1st_match(a[i + 1:], b[0])  # note that a is cut by i+1 items, so need to add back later
-        if j < 0:
-            return 0
-        next_occur = j + i + 1
-        if not can_drop_all_prev_letters(next_occur, a):
-            return 0
-        return can_match(b, a[next_occur:])
 
         ## work but a bit slow
-        # return can_match(b, a[i+1:])
-
+        return can_match(b, a[i+1:])
 
 
 def find_1st_match(a, ch):
