@@ -11,6 +11,12 @@ def find_uniq_values(arr):
     return uniq_values
 
 
+def find_counts(sort_arr):
+    # given a sorted array, return counts of elements in in
+    uniq_values = find_uniq_values(sort_arr)
+    return {v: sort_arr.count(v) for v in uniq_values}
+
+
 def equal(arr):
     # return min no. of ops needed to equalize all elements in arr
     # Idea:
@@ -24,15 +30,16 @@ def equal(arr):
     # then the number of groups will be reduced by 1 and we can continue until there is only 1 group,
     # ie. all equal
 
-    sort_arr = sorted(arr)
-    return find_min_ops(sort_arr)
+    count = find_counts(sorted(arr))
+    return find_min_ops(count)
 
 
-def find_min_ops(arr):
-    # Given a sorted array arr, find the min number of ops needed to equalize all elements of a
+def find_min_ops(count):
+    # Given a distribution represent as a dict {v: count(v)}_v
+    # find the min number of ops needed to equalize all elements of dist
 
-    uniq_values = find_uniq_values(arr)
-    m = len(uniq_values)
+    values = list(count.keys())
+    m = len(values)
     # if all elements equal, do nothing
     if m == 1:
         return 0
@@ -42,34 +49,25 @@ def find_min_ops(arr):
     # then the resulting dist will behave exactly as the initial dist with smaller values,
     # (because all smaller values are boosted same amount, so diff keep unchanged)
     # So, the min no. of ops when we absorb v_m to v_i is:
-    # min_ops(arr drop all max_v) + count(max_v) * min_ops(max_v - v_i)
-    # As the only term depending on i is min_ops(max_v - v_i), we only need to minimize that term
-    max_v = uniq_values[-1]
+    # min_ops(new arr with max_v absorbed to v_i) + count(max_v) * min_ops(max_v - v_i)
+    # two terms depending on i: min_ops(max_v - v_i), and new count of v_i in new array
+    max_v = values[-1]
+    count_max_v_ = count[max_v]
+    n_min_ops = []
+    for i in range(m - 1):
+        min_ops_i =  count_max_v_ * cal_min_ops(max_v - values[i])
 
-    min_ops = min([cal_min_ops(max_v - uniq_values[i]) for i in range(m-1)])
-    # drop all max_v from arr
-    new_arr = [x for x in arr if x < max_v]
-    return find_min_ops(new_arr) + arr.count(max_v) * min_ops
+        # absorb all max_v into v_i, thus update counts and drop max_v
+        new_count = dict(zip(count.keys(), count.values()))
+        new_count[values[i]] += count_max_v_
+        new_count.pop(max_v)
+        print('new counts:', new_count)
 
-    # Work but slow
-    # else, need to give chocolates to those with min number so that they can be equal with another group,
-    # but not know which group is best, so try all
+        min_ops_i += find_min_ops(new_count)
 
-    # min_v = uniq_values[0]
-    # n_min_ops = []
-    # for v in uniq_values[1:]:
-    #     # boost the group with min_v  to absorb the group with v bars, then repeat the process on new
-    #     # dist of chocolates
-    #     diff = v - min_v
-    #     count_v = arr.count(v)
-    #     n_ops = count_v * cal_min_ops(diff)
-    #     # two groups with min_v and v are merged together
-    #     # other groups are boosted by count(v) * diff
-    #     boost_amt = count_v * diff
-    #     new_arr = [min_v + boost_amt for w in arr if w in [min_v, v]] + \
-    #               [w + boost_amt for w in arr if w not in [min_v, v]]
-    #     n_min_ops.append(n_ops + find_min_ops(new_arr))
-    # return min(n_min_ops)
+        n_min_ops.append(min_ops_i)
+
+    return min(n_min_ops)
 
 
 def cal_min_ops(diff):
