@@ -12,62 +12,75 @@ def del_lower(a):
 
 # Complete the abbreviation function below.
 def abbreviation(a, b):
+    if can_match(b, a):
+        return 'YES'
+    else:
+        return 'NO'
+
+
+def can_drop_all_prev_letters(i, a):
+    # given index i, check if we can drop all letters bf a[i] by dropping only lower cases
+    left = del_lower(a[:i])
+    return (not left)
+
+
+def can_match(b, a):
     # stop cond
     if not b:
         # just delete all lowercase letters from a
         a_left = del_lower(a)
         if not a_left:
-            return 'YES'
+            return 1
         else:
-            return 'NO'
+            return 0
     if not a:
-        return 'NO'
+        return 0
 
     # Match b[0]
-    # find first letter in a which can be matched with b0, either as is or via capitalize
-    first_matches = find_1st_matches(a, b[0])
-    if not first_matches:  # no matchable letter
-        return 'NO'
+    # As there may be many letters in a which can be matched with b[0], either as is or via capitalize;
+    # we try all such letters
 
-    res = []
-    for i in first_matches:
-        r_i = match_first_letter(b, a, i)
-        res.append(r_i)
-    if 'YES' in res:
-        return 'YES'
-    return 'NO'
+    # Try the first of such letter (if have),  say at index i of a,
+    #  then try matching b with a[i:] (b[0] with a[i] already), if possible then return 1, else try other poss
+    # NOTE: matching b with a[i:] only leads to a final valid match if we can drop all letters bf i
+    # via dropping lower cases
+    i = find_1st_match(a, b[0])
+    if i < 0:  # no matchable letter
+        return 0
+    # else
+    # try matching b with a[i:]
+    if not can_drop_all_prev_letters(i, a):
+        return 0
+    # b[0] match with a[i] already
+    # check if can match b[1:] with a[i+1:]
+    if can_match(b[1:], a[i + 1:]):
+        return 1
+    else:  # try matching b[0] with its later occurences  in a
+        # todo: optimizing code
+        j = find_1st_match(a[i + 1:], b[0])  # note that a is cut by i+1 items, so need to add back later
+        if j < 0:
+            return 0
+        next_occur = j + i + 1
+        if not can_drop_all_prev_letters(next_occur, a):
+            return 0
+        return can_match(b, a[next_occur:])
 
-
-def match_first_letter(b, a, i):
-    # Given that b[0] can be matched with a[i], check if a[i+1:] can match with b[1:]
-
-    # First need to drop all letters bf idx i as they are unmatchable,
-    # however we may not be able to drop all of them, as only allowed to drop lower letters,
-    # UPPER letters will be left => so cannot match
-    left = del_lower(a[:i])
-    if left:
-        return 'NO'
-    # successfully delete all unmatched letters,
-    # left is a[idx:], as a[idx] is matched to b[0] already,
-    print('a[idx] is', a[i])
-    print('b[0]:', b[0])
-    # just need to check matching for remains of a and b
-    a_rem = a[i + 1:]
-    b_rem = b[1:]
-    print('remain of a:', a_rem)
-    print('remain of b:', b_rem)
-    return abbreviation(a_rem, b_rem)
+        ## work but a bit slow
+        # return can_match(b, a[i+1:])
 
 
-def find_1st_matches(a, ch):
+
+def find_1st_match(a, ch):
+    # given char ch and str a, find the first letter in a which can be matched with ch,
+    # either as is or via capitalize;
     if (ch in a) and (ch.lower() in a):
-        return [a.index(ch), a.index(ch.lower())]
+        return min(a.index(ch), a.index(ch.lower()))
     if (ch in a) and (not ch.lower() in a):
-        return [a.index(ch)]
+        return a.index(ch)
     if (not ch in a) and (ch.lower() in a):
-        return [a.index(ch.lower())]
+        return a.index(ch.lower())
     if (ch not in a) and (ch.lower() not in a):
-        return []
+        return -1
 
 
 if __name__ == '__main__':
@@ -75,7 +88,7 @@ if __name__ == '__main__':
         fptr = open(os.environ['OUTPUT_PATH'], 'w')
     except PermissionError:
         t = int(input())
-        fptr = open('../abbr-testcases/output/my_out_{}.txt'.format(t) , 'w')
+        fptr = open('../abbr-testcases/output/my_out_{}.txt'.format(t), 'w')
 
     q = int(input())
 
