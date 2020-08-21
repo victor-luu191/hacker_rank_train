@@ -27,6 +27,20 @@ def is_match(c1, c2):
     return (c1 == c2) or (c1.upper() == c2)
 
 
+def is_exact_match(s1, s2):
+    # an exact match := (len(s1) == len(s2)) and (is_match(s1[i], s2[i]), for all i)
+    if len(s1) != len(s2):
+        return False
+    for i in range(len(s1)):
+        if not is_match(s1[i], s2[i]):
+            return False
+    return True
+
+
+def get_uppers(s):
+    return [c for c in s if c in UPPERS]
+
+
 def can_match(b, a):
     # In general, we will match b[k:] to a[j:] and dups will happen, bc when we match b[k-1:] with a[j':],
     # whre j' < j, we already check if b[k:] can be matched with a[j:].
@@ -46,7 +60,10 @@ def can_match(b, a):
         # an empty b can only be matched with a[-i:] if a[-i:] contain all lowercases
         match[0][i] = not has_capital_letter(a[-i:])
 
-    # match last k letters of b, given that last its k-1 letters are matchable
+    # match last k letters of b, given that its last  k-1 letters are matchable.
+    # Process:
+    # i) find the shortest match for b[-k:]
+    # ii) if found shortest match, extend to the longest match
     for k in range(1, rows):
         print('\tmatching last {} letters of b'.format(k))
         # pick the shortest match of b[-(k-1):], as longer matches may pass an occurence of b[-k]
@@ -54,20 +71,23 @@ def can_match(b, a):
         i = match[k - 1][:].index(True)
         print('\ti:', i)
 
-        # find the shortest match for b[-k:], ie. match b[-k:]  with a[-j:]
-        #  s.t. all below conds are met:
+        # find the shortest match for b[-k:]:
+        # the match is a[-j:] defined by both below conds:
         # i) is_match(a[-j], b[-k])
-        # ii) no capital letter between a[-(j-1):-i],
+        # ii) no capital letter in range a[-(j-1):-i],
         shortest_match = None
         for j in range(i + 1, cols):
-            mid = get_in_between(a, j, i)
-            no_capital_in_between = not has_capital_letter(mid)
-            if is_match(a[-j], b[-k]) and no_capital_in_between:
+            in_between = get_in_between(a, j, i)
+            no_capital_in_between = not has_capital_letter(in_between)
+            if is_match(a[-j], b[-k]) and\
+                    (no_capital_in_between or is_exact_match(get_uppers(in_between), b[-(k-1):])):
+                print('\t shortest match for substr', b[-k:], 'is:')
+                print('\t', a[-j:])
                 match[k][j] = True
                 shortest_match = j
                 break
-        # if found shortest match then
-        # continue to extend by adding lower letters until not possible, ie. hitting a capital
+        # if found shortest match, extend to longest match:
+        # by adding lower letters until not possible, ie. hitting a capital
         if shortest_match:
             for r in range(shortest_match + 1, cols):
                 if a[-r] not in UPPERS:
@@ -87,16 +107,28 @@ def can_match(b, a):
 
 
 def get_in_between(a, j, i):
+    # Given indices j > i,
     # return the part in between a[-j] and a[-i], excluding two ends
+    # such a part only exists when j > i+1,
+    # also working with a neg index -i require handle edge case when i=0
+
+    if j == i+1:
+        return ''
+    # else: j > i+1
     if i > 0:
-        in_between = a[-(j - 1): -i]
-    # if i=0 the above wrongly return '', instead need a[-(j - 1):]
-    if i == 0 and j == 1:
-        in_between = ''
-    if i == 0 and j > 1:
-        in_between = a[-(j - 1):]
-    print('\tsubstr of a from', -(j - 1), 'to', -(i + 1), ':', in_between)
-    return in_between
+        return a[-(j - 1): -i]
+    return a[-(j - 1):]
+
+
+    # if i > 0:
+    #     in_between = a[-(j - 1): -i]
+    # # if i=0 the above wrongly return '', instead need a[-(j - 1):]
+    # if i == 0 and j == 1:
+    #     in_between = ''
+    # if i == 0 and j > 1:
+    #     in_between = a[-(j - 1):]
+    # print('\tsubstr of a from', -(j - 1), 'to', -(i + 1), ':', in_between)
+    # return in_between
 
 
 if __name__ == '__main__':
