@@ -77,15 +77,22 @@ def can_match(b, a):
         # ii) no capital letter in range a[-(j-1):-i],
         shortest_match = None
         for j in range(i + 1, cols):
-            in_between = get_in_between(a, j, i)
-            no_capital_in_between = not has_capital_letter(in_between)
-            if is_match(a[-j], b[-k]) and\
-                    (no_capital_in_between or is_exact_match(get_uppers(in_between), b[-(k-1):])):
-                print('\t shortest match for substr', b[-k:], 'is:')
-                print('\t', a[-j:])
-                match[k][j] = True
-                shortest_match = j
-                break
+
+            if is_match(a[-j], b[-k]):
+                # TODO: fold this part into a method
+                # check if either in-between part can be dropped OR can be kept as another match for
+                # last k-1 letters of b and other chars in a[-j:] can be dropped
+                in_between = get_in_between(a, j, i)
+                no_capital_in_between = not has_capital_letter(in_between)
+                mid_uppers = get_uppers(in_between)
+                if no_capital_in_between or\
+                        (is_exact_match(mid_uppers, b[-(k - 1):]) and not has_capital_letter(a[-j:].replace(mid_uppers, ''))):
+
+                    print('\t shortest match for substr', b[-k:], 'is:')
+                    print('\t', a[-j:])
+                    match[k][j] = True
+                    shortest_match = j
+                    break
         # if found shortest match, extend to longest match:
         # by adding lower letters until not possible, ie. hitting a capital
         if shortest_match:
