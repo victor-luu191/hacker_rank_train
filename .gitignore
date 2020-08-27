@@ -1,6 +1,5 @@
 
 medium/time_delta_out.txt
-medium/time_delta_out.txt
 medium/graph/bfsshortreach-testcases.zip
 medium/graph/bfsshortreach-testcases/input/input00.txt
 medium/graph/bfsshortreach-testcases/input/input07.txt
@@ -12,3 +11,5 @@ medium/abbr-testcases/input/test1.txt
 medium/abbr-testcases/output/my_out_1.txt
 medium/abbr-testcases/output/my_out_6.txt
 medium/abbr-testcases/output/output6.txt
+medium/dynamic/test1.txt
+medium/abbr-testcases/output/my_out_0.txt
