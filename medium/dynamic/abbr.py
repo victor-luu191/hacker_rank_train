@@ -65,42 +65,48 @@ def can_match(b, a):
     # i) find the shortest match for b[-k:]
     # ii) if found shortest match, extend to the longest match
     for k in range(1, rows):
-        print('\tmatching last {} letters of b'.format(k))
-        # pick the shortest match of b[-(k-1):], as longer matches may pass an occurence of b[-k]
-        # it will be the first i s.t. match[k-1][i] = 1
-        i = match[k - 1][:].index(True)
-        print('\ti:', i)
+        print('\tmatching last {} letters of b: {}'.format(k, b[-k:]))
 
-        # find the shortest match for b[-k:]:
-        # the match is a[-j:] defined by both below conds:
-        # i) is_match(a[-j], b[-k])
-        # ii) no capital letter in range a[-(j-1):-i],
-        shortest_match = None
-        for j in range(i + 1, cols):
+        # Go backward to find all exact matches for b[-k:] ,
+        # an exact match should start with a match for b[-k],
+        # and the remaining part should be matchable with b[-(k-1):], known based on row k-1 of match matrix
+        # Then for any two exact matches, check for each position j between them
+        # if a[-j:] can also form a match
 
-            if is_match(a[-j], b[-k]):
-                # TODO: fold this part into a method
-                # check if either in-between part can be dropped OR can be kept as another match for
-                # last k-1 letters of b and other chars in a[-j:] can be dropped
-                in_between = get_in_between(a, j, i)
-                no_capital_in_between = not has_capital_letter(in_between)
-                mid_uppers = get_uppers(in_between)
-                if no_capital_in_between or\
-                        (is_exact_match(mid_uppers, b[-(k - 1):]) and not has_capital_letter(a[-j:].replace(mid_uppers, ''))):
+        # Find all exact matches
+        exact_matches = []
+        for i in range(1, cols):
+            if is_match(a[-i], b[-k]) and match[k-1][i-1] :
+                match[k][i] = True
+                exact_matches.append(i)
 
-                    print('\t shortest match for substr', b[-k:], 'is:')
-                    print('\t', a[-j:])
+        # for any two exact matches, check if a[-j:] can also form a match,
+        # for each position j between the two matches
+        def extend_till_hit_upper(m1, m2=cols):
+            for j in range(m1 + 1, m2):
+                if a[-j] not in UPPERS:
                     match[k][j] = True
-                    shortest_match = j
-                    break
-        # if found shortest match, extend to longest match:
-        # by adding lower letters until not possible, ie. hitting a capital
-        if shortest_match:
-            for r in range(shortest_match + 1, cols):
-                if a[-r] not in UPPERS:
-                    match[k][r] = True
                 else:
                     break
+
+        if exact_matches:
+            if len(exact_matches) == 1:
+                single_match = exact_matches[0]
+                print('\tfound only one exact match at index {}, extending it until hitting upper case'.\
+                      format(single_match)
+                      )
+                extend_till_hit_upper(single_match)
+
+            if len(exact_matches) > 1:
+                print('\tfound many exact matches at indices:', exact_matches)
+                # for any two exact matches em[i] and em[i+1], check if a[-j:] can also form a match,
+                # for em[i] < j < em[i+1]
+                for i in range(len(exact_matches) - 1):
+                    cur_match, next_match = exact_matches[i], exact_matches[i + 1]
+                    extend_till_hit_upper(cur_match, next_match)
+                last_match = exact_matches[-1]
+                extend_till_hit_upper(last_match)
+
             print('\trow', k, 'of match matrix:', match[k][:])
         else:
             # no match, so even a substr of b cannot match,
@@ -119,13 +125,12 @@ def get_in_between(a, j, i):
     # such a part only exists when j > i+1,
     # also working with a neg index -i require handle edge case when i=0
 
-    if j == i+1:
+    if j == i + 1:
         return ''
     # else: j > i+1
     if i > 0:
         return a[-(j - 1): -i]
     return a[-(j - 1):]
-
 
     # if i > 0:
     #     in_between = a[-(j - 1): -i]
