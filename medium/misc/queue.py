@@ -22,7 +22,7 @@ def minimumBribes(q):
 
 def min_bribe(q):
     m = len(q)
-    print('queue length:', m)
+    # print('queue length:', m)
     # stop cond
     if m == 1:
         return 0
@@ -33,30 +33,30 @@ def min_bribe(q):
             return 1
 
     if m > 2:
-        pos_of_m = q.index(m) + 1
-        if pos_of_m < m - 2:
-            return -1
-        if pos_of_m == (m - 2):  # n made 2 bribes to move fw 2 positions and q[n-3]=n
-            others = q[:(m - 3)] + q[m - 2:]
-            other_bribes = min_bribe(others)
-            if other_bribes >= 0:
-                return other_bribes + 2
-            else:
-                return -1  # propagate the invalid till outmost caller
-        if pos_of_m == m - 1:  # n made >=1 bribe and q[n-2] = n
-            others = q[:(m - 2)] + q[m - 1:]
-            other_bribes = min_bribe(others)
-            if other_bribes >= 0:
-                return other_bribes + 1
-            else:
+        q = [0] + q  # add a dummy s.t. actual items are indexed from 1
+        # print('initial q:', q)
+        n_bribe = 0
+        reduced_q = q
+        for i in range(m, 2, -1):
+            # during the process, i is always the largest item in queue
+            pos_of_i = reduced_q.index(i)
+            d = i - pos_of_i
+            if d > 2:  # i move fw more than 2 pos, invalid
                 return -1
-        if pos_of_m == m:  # n is still at last pos, the best way: he not bribe and only others move
-            others = q[:(m - 1)]
-            other_bribes = min_bribe(others)
-            if other_bribes >= 0:
-                return other_bribes
-            else:
-                return -1
+            if d == 2:  # i move fw 2 pos by making 2 bribes
+                n_bribe += 2
+                reduced_q = reduced_q[:i - 2] + reduced_q[i - 1:]
+            if d == 1:  # i move fw 1 pos by making 1 bribe
+                n_bribe += 1
+                reduced_q = reduced_q[:i - 1] + reduced_q[i:]
+            if d == 0:  # i stays at the last pos, no bribe
+                reduced_q = reduced_q[:i]
+            # print('after dropping', i, ', reduced q is:', reduced_q)
+
+        reduced_q.pop(0)
+        if reduced_q == [2, 1]:
+            return n_bribe + 1
+        return n_bribe
 
 
 if __name__ == '__main__':
