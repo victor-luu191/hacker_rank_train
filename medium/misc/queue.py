@@ -39,18 +39,16 @@ def min_bribe(q):
         reduced_q = q
         for i in range(m, 2, -1):
             # during the process, i is always the largest item in queue
-            pos_of_i = reduced_q.index(i)
-            d = i - pos_of_i
-            if d > 2:  # i move fw more than 2 pos, invalid
-                return -1
-            if d == 2:  # i move fw 2 pos by making 2 bribes
-                n_bribe += 2
-                reduced_q = reduced_q[:i - 2] + reduced_q[i - 1:]
-            if d == 1:  # i move fw 1 pos by making 1 bribe
+            if reduced_q[i] == i:  # i stays at the last pos, no bribe
+                reduced_q = reduced_q[:i]
+            elif reduced_q[i - 1] == i:  # i move fw 1 pos by making 1 bribe
                 n_bribe += 1
                 reduced_q = reduced_q[:i - 1] + reduced_q[i:]
-            if d == 0:  # i stays at the last pos, no bribe
-                reduced_q = reduced_q[:i]
+            elif reduced_q[i - 2] == i:  # i move fw 2 pos by making 2 bribes
+                n_bribe += 2
+                reduced_q = reduced_q[:i - 2] + reduced_q[i - 1:]
+            else:  # i move fw more than 2 pos, invalid
+                return -1
             # print('after dropping', i, ', reduced q is:', reduced_q)
 
         reduced_q.pop(0)
