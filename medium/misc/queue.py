@@ -34,27 +34,30 @@ def min_bribe(q):
 
     if m > 2:
         q = [0] + q  # add a dummy s.t. actual items are indexed from 1
-        # print('initial q:', q)
-        n_bribe = 0
-        reduced_q = q
-        for i in range(m, 2, -1):
-            # during the process, i is always the largest item in queue
-            if reduced_q[i] == i:  # i stays at the last pos, no bribe
-                reduced_q = reduced_q[:i]
-            elif reduced_q[i - 1] == i:  # i move fw 1 pos by making 1 bribe
-                n_bribe += 1
-                reduced_q = reduced_q[:i - 1] + reduced_q[i:]
-            elif reduced_q[i - 2] == i:  # i move fw 2 pos by making 2 bribes
-                n_bribe += 2
-                reduced_q = reduced_q[:i - 2] + reduced_q[i - 1:]
-            else:  # i move fw more than 2 pos, invalid
-                return -1
-            # print('after dropping', i, ', reduced q is:', reduced_q)
 
-        reduced_q.pop(0)
-        if reduced_q == [2, 1]:
-            return n_bribe + 1
-        return n_bribe
+        def cal_n_bribe(i, queue):
+            # during the process, i is always the largest item in queue
+            if queue[i] == i:  # i stays at the last pos, no bribe
+                queue.pop()
+                return 0
+            elif queue[i - 1] == i:  # i move fw 1 pos by making 1 bribe
+                queue.pop(i - 1)
+                return 1
+            elif queue[i - 2] == i:  # i move fw 2 pos by making 2 bribes
+                queue.pop(i - 2)
+                return 2
+            else:  # i move fw more than 2 pos, invalid
+                # todo: check for some way to exit early
+                return -1
+
+        n_bribes = [cal_n_bribe(i, q) for i in range(m, 2, -1)]
+        # print('list of bribes made:', n_bribes)
+        if -1 in n_bribes:
+            return -1
+        q.pop(0)
+        if q == [2, 1]:
+            return sum(n_bribes) + 1
+        return sum(n_bribes)
 
 
 if __name__ == '__main__':
